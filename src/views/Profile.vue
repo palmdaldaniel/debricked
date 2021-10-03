@@ -75,11 +75,8 @@ export default {
 };
 </script>
 <style>
-.dark {
-  color: white;
-  background: black;
-}
-.light {
-  color: black;
+.wrapper {
+  height: 100vh;
+  padding: 10px;
 }
 </style>
