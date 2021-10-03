@@ -4,7 +4,11 @@
       <a @click="themeSwitcher" class="waves-effect waves-light btn"
         >theme switcher</a
       >
-      <p class="right-align" :class="useTheme ? 'white-text' : 'black-text'">
+      <p
+        v-if="user"
+        class="right-align"
+        :class="useTheme ? 'white-text' : 'black-text'"
+      >
         Welcome {{ user }}
       </p>
       <div>
@@ -42,18 +46,25 @@
     </div>
   </div>
 </template>
+
 <script>
+import { store } from "../store/store.js";
+
 export default {
   data() {
     return {
-      useTheme: false,
-      user: "Daniel", // will be null att first
+      user: store.state.name,
+      useTheme: store.state.useTheme,
+      //user: null, //will be null att first
     };
   },
   methods: {
     themeSwitcher() {
-      // set theme to the opposite to what it is.
-      this.useTheme = !this.useTheme;
+      //set theme to the opposite to what it is.
+      store.state.useTheme = !store.state.useTheme;
+
+      // also need to update this components theme state
+      this.useTheme = store.state.useTheme;
     },
 
     async getP() {
@@ -62,21 +73,10 @@ export default {
       this.planet = res;
     },
   },
-  mounted() {
-    const jsonValue = localStorage.getItem("theme");
-    const theme = JSON.parse(jsonValue);
-    this.useTheme = theme;
-  },
-  watch: {
-    useTheme: function (newValue) {
-      localStorage.setItem("theme", newValue);
-    },
-  },
 };
 </script>
 <style>
 .wrapper {
   height: 100vh;
-  padding: 10px;
 }
 </style>

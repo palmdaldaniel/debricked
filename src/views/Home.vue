@@ -9,19 +9,16 @@
   </div>
 </template>
 <script>
+  import { store } from "../store/store.js";
 export default {
+
+
   data() {
     return {
-      useTheme: false,
+      useTheme: store.state.useTheme,
     };
   },
 
-  mounted() {
-    const jsonValue = localStorage.getItem("theme");
-    const theme = JSON.parse(jsonValue);
-
-    this.useTheme = theme;
-  },
 };
 </script>
 <style scoped>
