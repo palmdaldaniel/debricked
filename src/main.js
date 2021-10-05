@@ -1,7 +1,13 @@
 import { createApp } from "vue";
 import App from "./App.vue";
-import 'materialize-css'
-import 'materialize-css/dist/css/materialize.min.css'
 import router from "./router";
 
-createApp(App).use(router).mount("#app");
+import { BootstrapVue } from "bootstrap-vue";
+
+// Import Bootstrap an BootstrapVue CSS files (order is important)
+import "bootstrap/dist/css/bootstrap.css";
+import "bootstrap-vue/dist/bootstrap-vue.css";
+
+createApp(App)
+    .use(router)
+    .mount("#app");
