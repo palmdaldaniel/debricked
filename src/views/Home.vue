@@ -6,35 +6,40 @@
       </h3>
       <input type="file" id="file" ref="file" v-on:change="handleFileUpload" />
       <button v-on:click="submitFile" :disabled="file === null">Submit</button>
-      <button v-on:click="startScanning">Start Progress</button>
-      <button v-on:click="getScanningProgress">Get Progress</button>
-      <button v-on:click="whoAmI">Who am i ?</button>
-
       <div class="progress">
         <div :style="{ width: value + '%' }" class="progressBar"></div>
       </div>
     </div>
-    <table  v-if="dependencies">
-      <tr>
-        <th>CVE</th>
-        <th>Dependency</th>
-        <th>CVSS2</th>
-        <th>CVSS3</th>
-      </tr>
-      <tr v-for="item in dependencies" :key="item.dependency">
-        <td>{{ item.cve }}</td>
-        <td>{{ item.dependency }}</td>
-        <td>{{ item.cvss2 }}</td>
-        <td>{{ item.cvss3 }}</td>
-      </tr>
+
+    <table class="table table-dark" v-if="dependencies">
+      <thead>
+        <tr>
+          <th>CVE</th>
+          <th>Dependency</th>
+          <th>CVSS2</th>
+          <th>CVSS3</th>
+        </tr>
+      </thead>
+      <tbody v-for="item in dependencies" :key="item.dependency">
+        <tr>
+          <td>{{ item.cve }}</td>
+          <td>{{ item.dependency }}</td>
+          <td>{{ item.cvss2 }}</td>
+          <td>{{ item.cvss3 }}</td>
+        </tr>
+      </tbody>
     </table>
+    <div v-if="errorMsg" class="alert alert-warning" role="alert">
+      {{ this.errorMsg }}
+    </div>
+    <button v-on:click="whoAmI">Who am i ?</button>
   </div>
 </template>
 <script>
 import { store } from "../store/store.js";
 
 const token =
-  "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzUxMiJ9.eyJpYXQiOjE2MzM4OTQ2NTEsImV4cCI6MTYzMzg5ODI1MSwicm9sZXMiOlsiUk9MRV9PUEVOX0FQSSIsIlJPTEVfVVNFUiIsIlJPTEVfQ09NUEFOWV9BRE1JTiJdLCJ1c2VybmFtZSI6IjdmYTZkODBmZjVkMmYyM2EzZjY0Mjk5YTU2N2EzOWUwYTRmZDE2ZjYifQ.taPVFNsZHtbL5gZlr33kMzpp6mLEQQwJ7MYFU2AtZzgzIvMGidWrdkgzAv4qMntRq6gYG8ggyIJ4VCE_ntYfOPUTeKASDPJm5IX09XKs0GolqPmZvYqvBSe0fRbqjEsel2hz6nc1CIrdxaHxQBcgXfAradBNS87R18iW0Tt3K0Zw_-UvMfu8CyfNTHqXQ3OQrtlLZ1elKGQuvahas5nqbmyPQ6_yP74WVRF2-0k0U5dd4wmqX9GflcoI0lDCg2vuEDtvE1qT-1gZmB0rvxk4K4ltOyDTLzDpAFk0gEHvE9_-3ZwVisZ_8nZYZXVpy6nyAczcTIF09SAfPeBO3dMEVrYg6T2bbNwEjRQEeLufUfhQmor3IoakrusoJs8nSe-9pOwhJNS7ZRfoK7ynQ8pzsYEAQRTnLz0uWDaqD1_rgX18saoaaPHv_HdgQA5uB4VHJuYO33dGPwtJxVjt9qU4CiW1wU1Go-yym2PGphL1T6ynXekVGrcXln2bsoWTGlGT8K6YIliTz5ZKtLbgw3t13R9ZK-zE7A7RlkEC2Z2WnzUIMp_mZaTIPfCuNChIzRBPJ31oVo4-V8UDSxZ-h0g6y72qeUBE7A1sPUJU-1ibd4EGaP0pArvhU_p4CcW1buPl_NTnm3jtnJPWqE2dLZA2VHy0fV89Qjidh26lFwxhtAo";
+  "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzUxMiJ9.eyJpYXQiOjE2MzM4OTk4MTksImV4cCI6MTYzMzkwMzQxOSwicm9sZXMiOlsiUk9MRV9PUEVOX0FQSSIsIlJPTEVfVVNFUiIsIlJPTEVfQ09NUEFOWV9BRE1JTiJdLCJ1c2VybmFtZSI6IjdmYTZkODBmZjVkMmYyM2EzZjY0Mjk5YTU2N2EzOWUwYTRmZDE2ZjYifQ.cpGvFTZeyA677tXQjtJJO72JRRVrMfuBYpg-jwlU3AjbgaFEM4r2X2I8iPLhkwi0IkSQS8MECEr2X-igTwSrsnkeWdjVBAfg5NOu2f_cOC8Zhvtrkgzium0ViUv8cfeLDVd2t_MqOJRCnzdZvxgwGAZMWnNsMFv9ovNsTcLyIYOhVC9RuujfT-aMM3EGrJ0CFAXMm8O5ZP3mQHU_pZbCbZOpZVCjRpe0flu758XovcdrxNg8ksEWtxHSoNszJa1r4jsZmfdfOQX_EsPKLLyJ3HIJx2CJg_dPmHYUuVsZy-LBX5td6VBIC72ltOW_XJ-tn1BezqrC1O-X4hHukNzPIzHKZ725U070gHT2HKq1pl7zMd9UdcJmGQOmxVsmYbG8ngrg3qf2g2Bd_Qcjnb5Iq45x09FKLVpO_tZuCEBzlu72UVaQ9oJL_87gDyxHvY1gS8eDrb58K6vgVug7rFyKEwaBtRGKJWx2U7PItPIecChMR15XAA2In8Tyv82vuFA-6vJR8x1jvAt_DN0X5aZOa8B3GN-CyINVW7P8wF6kAzD6Q4RWdguS7SL1v8llMjQ8AxFiD8MF5Bi_37re2MflFXsIZclRk3AFSm7SRT_Zy4kfZtbPDife8owkKBwcHseJ__YndlBiUGg-X49W0puH8C09qFuQuGBxbVZne7EvhsE";
 
 // submit dependency file // post request
 const urlUpload =
@@ -58,7 +63,9 @@ export default {
       useTheme: store.state.useTheme,
       value: 0,
       vulnerabilities: null,
-      dependencies: null
+      dependencies: null,
+      isScanning: false,
+      errorMsg: null,
     };
   },
   watch: {
@@ -68,8 +75,10 @@ export default {
         this.startScanning();
       }
     },
-    dependencies: function (val) {
-      console.log("val that is ready to be used:>", this.dependencies);
+    errorMsg: function (val) {
+      setTimeout(() => {
+        this.errorMsg = null;
+      }, 3000);
     },
   },
   methods: {
@@ -77,8 +86,6 @@ export default {
       this.file = this.$refs.file.files[0];
     },
     async submitFile(e) {
-      console.log("this.file:>", this.file);
-
       const formData = new FormData();
       formData.append("repositoryName", "testingiiii");
       formData.append("commitName", "unknown");
@@ -114,7 +121,9 @@ export default {
           intervalId = setInterval(this.getScanningProgress, 1500);
         }
       } catch (error) {
-        console.log("error", error);
+        if (error.response) {
+          this.errorMsg = error.response.statusText;
+        }
       }
     },
 
@@ -131,8 +140,6 @@ export default {
             },
           }
         );
-        console.log("res.data:>", res.data);
-
         if (res.status === 202) {
           this.value = res.data.progress;
         } else if (res.status === 200) {
@@ -167,19 +174,6 @@ export default {
         console.log("error", error);
       }
     },
-    async getResults() {
-      console.log("hello getting results");
-      try {
-        const res = await axios.get(urlTrackProgress, {
-          headers: {
-            Authorization: "Bearer " + token,
-          },
-        });
-        this.value = res.data.progress;
-      } catch (error) {
-        console.log("error", error);
-      }
-    },
   },
 };
 </script>
@@ -194,5 +188,10 @@ export default {
 .progressBar {
   height: 30px;
   background: red;
+}
+
+.table {
+  margin: 0 auto;
+  width: 60%;
 }
 </style>
