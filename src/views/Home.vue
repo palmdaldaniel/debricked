@@ -5,7 +5,7 @@
         Upload your file pls!
       </h3>
       <input type="file" id="file" ref="file" v-on:change="handleFileUpload" />
-      <button v-on:click="submitFile">Submit</button>
+      <button v-on:click="submitFile" :disabled="file === null">Submit</button>
       <button v-on:click="startScanning">Start Progress</button>
       <button v-on:click="getScanningProgress">Get Progress</button>
       <button v-on:click="whoAmI">Who am i ?</button>
@@ -14,14 +14,27 @@
         <div :style="{ width: value + '%' }" class="progressBar"></div>
       </div>
     </div>
+    <table  v-if="dependencies">
+      <tr>
+        <th>CVE</th>
+        <th>Dependency</th>
+        <th>CVSS2</th>
+        <th>CVSS3</th>
+      </tr>
+      <tr v-for="item in dependencies" :key="item.dependency">
+        <td>{{ item.cve }}</td>
+        <td>{{ item.dependency }}</td>
+        <td>{{ item.cvss2 }}</td>
+        <td>{{ item.cvss3 }}</td>
+      </tr>
+    </table>
   </div>
 </template>
 <script>
-
 import { store } from "../store/store.js";
 
 const token =
-  "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzUxMiJ9.eyJpYXQiOjE2MzM4OTA2NDksImV4cCI6MTYzMzg5NDI0OSwicm9sZXMiOlsiUk9MRV9PUEVOX0FQSSIsIlJPTEVfVVNFUiIsIlJPTEVfQ09NUEFOWV9BRE1JTiJdLCJ1c2VybmFtZSI6IjdmYTZkODBmZjVkMmYyM2EzZjY0Mjk5YTU2N2EzOWUwYTRmZDE2ZjYifQ.Y5JD5a-98H-7Pvbzi_Npviym7ApJC1pKG_EGmdgMuLjyv-JZsCa-pBTqGtu5v68TXd7H_GIctObcMBRhtLoEyR2STilDoRqgVg6ALGc6B8FW3sArEyWPHCy3yQzYDwOfvdETOF1JkegRF8qSWGP-7WIa2CWfiIfHq5xIVn16CgA4n2iYqr1-0ID03OExFiX71qe_GdZO4HOMDfjfVBan--YqAh4b5mH-luzAMl19eBoT2RHxAK3l2G6CDaRMv4wE6yB0-hTKlASqnifvwd4d4Ko9SxRJ1W-HNlTV1gpKEqUuQS0inHO7tCo6hStlS5pYpvXA_om0to9amVlL2aOAyXzNeGtmxwU_WqvX3MGZe7KG-VsOWYUWke4e8qc5jpxMccjhT4RfeA2oM6PtWgC97fXfZvTZkePESk82B0X7HPTetRvhX8dO9mKFqIg9Xqj7hTviqiKPeBZXXC3y1HowouVvM4ihMUcd8JXXZgjx3lM1v5xyUOLvVsp3ygXMHPSuePXMQlMYRXl3f96Ys3p10rthey8By6NyaKcHXewVAmJJC7Pw4DFChIn3JiNhCNxY8DUfWsewUCskYfCUD0gAkiqq-vmQy29KPZ5SmMTzwelAir4gZtwl6tupWZhAPx6GEnRbZrQipIT_sDE104mB7_y1SiOSP02imsQVDb_iOpo";
+  "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzUxMiJ9.eyJpYXQiOjE2MzM4OTQ2NTEsImV4cCI6MTYzMzg5ODI1MSwicm9sZXMiOlsiUk9MRV9PUEVOX0FQSSIsIlJPTEVfVVNFUiIsIlJPTEVfQ09NUEFOWV9BRE1JTiJdLCJ1c2VybmFtZSI6IjdmYTZkODBmZjVkMmYyM2EzZjY0Mjk5YTU2N2EzOWUwYTRmZDE2ZjYifQ.taPVFNsZHtbL5gZlr33kMzpp6mLEQQwJ7MYFU2AtZzgzIvMGidWrdkgzAv4qMntRq6gYG8ggyIJ4VCE_ntYfOPUTeKASDPJm5IX09XKs0GolqPmZvYqvBSe0fRbqjEsel2hz6nc1CIrdxaHxQBcgXfAradBNS87R18iW0Tt3K0Zw_-UvMfu8CyfNTHqXQ3OQrtlLZ1elKGQuvahas5nqbmyPQ6_yP74WVRF2-0k0U5dd4wmqX9GflcoI0lDCg2vuEDtvE1qT-1gZmB0rvxk4K4ltOyDTLzDpAFk0gEHvE9_-3ZwVisZ_8nZYZXVpy6nyAczcTIF09SAfPeBO3dMEVrYg6T2bbNwEjRQEeLufUfhQmor3IoakrusoJs8nSe-9pOwhJNS7ZRfoK7ynQ8pzsYEAQRTnLz0uWDaqD1_rgX18saoaaPHv_HdgQA5uB4VHJuYO33dGPwtJxVjt9qU4CiW1wU1Go-yym2PGphL1T6ynXekVGrcXln2bsoWTGlGT8K6YIliTz5ZKtLbgw3t13R9ZK-zE7A7RlkEC2Z2WnzUIMp_mZaTIPfCuNChIzRBPJ31oVo4-V8UDSxZ-h0g6y72qeUBE7A1sPUJU-1ibd4EGaP0pArvhU_p4CcW1buPl_NTnm3jtnJPWqE2dLZA2VHy0fV89Qjidh26lFwxhtAo";
 
 // submit dependency file // post request
 const urlUpload =
@@ -38,13 +51,14 @@ const urlWhoAmI = "http://localhost:8081/api/1.0/open/zapier/user";
 
 let intervalId;
 export default {
-  
   data() {
     return {
       id: null,
       file: null,
       useTheme: store.state.useTheme,
       value: 0,
+      vulnerabilities: null,
+      dependencies: null
     };
   },
   watch: {
@@ -53,6 +67,9 @@ export default {
       if (val === this.id) {
         this.startScanning();
       }
+    },
+    dependencies: function (val) {
+      console.log("val that is ready to be used:>", this.dependencies);
     },
   },
   methods: {
@@ -82,7 +99,6 @@ export default {
       }
     },
     async startScanning() {
-     
       console.log("start scanning");
       const formData = new FormData();
       formData.append("ciUploadId", this.id);
@@ -97,7 +113,6 @@ export default {
         if (res.status === 204) {
           intervalId = setInterval(this.getScanningProgress, 1500);
         }
-        
       } catch (error) {
         console.log("error", error);
       }
@@ -116,17 +131,25 @@ export default {
             },
           }
         );
-        console.log('res.data:>', res.data);
+        console.log("res.data:>", res.data);
 
-      if(res.status === 202) {
-         this.value = res.data.progress;
+        if (res.status === 202) {
+          this.value = res.data.progress;
+        } else if (res.status === 200) {
+          console.log("scan is complete", res.data);
+          // when scan is complete clear the the interval and set the progress value to it's final value.
+          clearInterval(intervalId);
+          this.value = res.data.progress;
 
-      } else if(res.status === 200) {
-        console.log('scan is complete', res.data);
-        clearInterval(intervalId)
-      }
-
-   
+          // from results - the 5th object always seems to have cves so in order to display some result on the page I choose this one.
+          if (res.data.automationRules[5].hasCves) {
+            console.log(
+              "data to loop",
+              res.data.automationRules[5].triggerEvents
+            );
+            this.dependencies = res.data.automationRules[5].triggerEvents;
+          }
+        }
       } catch (error) {
         console.log("error", error);
       }
