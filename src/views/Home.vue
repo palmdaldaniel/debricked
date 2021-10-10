@@ -7,7 +7,7 @@
       <input type="file" id="file" ref="file" v-on:change="handleFileUpload" />
       <button v-on:click="submitFile">Submit</button>
       <button v-on:click="startScanning">Start Progress</button>
-      <button v-on:click="getScanningProgres">Get Progress</button>
+      <button v-on:click="getScanningProgress">Get Progress</button>
       <button v-on:click="whoAmI">Who am i ?</button>
 
       <div class="progress">
@@ -17,6 +17,7 @@
   </div>
 </template>
 <script>
+
 import { store } from "../store/store.js";
 
 const token =
@@ -31,14 +32,13 @@ const urlStartScanning =
   "http://localhost:8081/api/1.0/open/finishes/dependencies/files/uploads";
 
 // start the scanning progress // post request
-const urlTrackProgress =
-  "http://localhost:8081/api/1.0/open/ci/upload/status?ciUploadId=2203480";
+const urlTrackProgress = "http://localhost:8081/api/1.0/open/ci/upload/status";
 
 const urlWhoAmI = "http://localhost:8081/api/1.0/open/zapier/user";
 
-let interval = 0;
-
+let intervalId;
 export default {
+  
   data() {
     return {
       id: null,
@@ -46,6 +46,14 @@ export default {
       useTheme: store.state.useTheme,
       value: 0,
     };
+  },
+  watch: {
+    // when id is set start the scan progress!
+    id: function (val) {
+      if (val === this.id) {
+        this.startScanning();
+      }
+    },
   },
   methods: {
     handleFileUpload() {
@@ -64,17 +72,17 @@ export default {
           headers: {
             Authorization: "Bearer " + token,
           },
-          // prep for upload progressbar
-          /*   onUploadProgress: (progressEvent) => {}, */
         });
-        console.log("data", res.data);
-
-        this.id = res.data.ciUploadId;
+        console.log("data", res);
+        if (res.status === 200) {
+          this.id = res.data.ciUploadId;
+        }
       } catch (error) {
         console.log("error", error);
       }
     },
     async startScanning() {
+     
       console.log("start scanning");
       const formData = new FormData();
       formData.append("ciUploadId", this.id);
@@ -86,21 +94,39 @@ export default {
           },
         });
         // if post req returns a 204 fire an interval to get updates about scanning progress every 1.5 sec.
-        interval = setInterval(this.getScanningProgres(), 1500);
+        if (res.status === 204) {
+          intervalId = setInterval(this.getScanningProgress, 1500);
+        }
+        
       } catch (error) {
         console.log("error", error);
       }
     },
 
-    async getScanningProgres() {
-      console.log("get scan progress");
+    async getScanningProgress() {
       try {
-        const res = await axios.get(urlTrackProgress, {
-          headers: {
-            Authorization: "Bearer " + token,
-          },
-        });
-        this.value = res.data.progress;
+        const res = await axios.get(
+          `http://localhost:8081/api/1.0/open/ci/upload/status`,
+          {
+            headers: {
+              Authorization: "Bearer " + token,
+            },
+            params: {
+              ciUploadId: this.id,
+            },
+          }
+        );
+        console.log('res.data:>', res.data);
+
+      if(res.status === 202) {
+         this.value = res.data.progress;
+
+      } else if(res.status === 200) {
+        console.log('scan is complete', res.data);
+        clearInterval(intervalId)
+      }
+
+   
       } catch (error) {
         console.log("error", error);
       }
@@ -118,17 +144,18 @@ export default {
         console.log("error", error);
       }
     },
-  },
-  watch: {
-    // when id is set start the scan progress!
-    id: function (val) {
-      if (val === this.id) {
-        this.startScanning();
+    async getResults() {
+      console.log("hello getting results");
+      try {
+        const res = await axios.get(urlTrackProgress, {
+          headers: {
+            Authorization: "Bearer " + token,
+          },
+        });
+        this.value = res.data.progress;
+      } catch (error) {
+        console.log("error", error);
       }
-    },
-    value: function (val) {
-      console.log(val);
-      clearInterval(interval)
     },
   },
 };
