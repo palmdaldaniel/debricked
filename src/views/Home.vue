@@ -38,12 +38,11 @@
         {{ value + "%" }}
       </div>
     </div>
-  <div v-if="errorMsg" class="alert alert-warning" role="alert">
-    {{ this.errorMsg }}
-  </div>
+    <div v-if="errorMsg" class="alert alert-warning" role="alert">
+      {{ this.errorMsg }}
+    </div>
 
-  <Results v-if="dependencies" v-bind:items="dependencies" />
-  
+    <Results v-if="dependencies" v-bind:items="dependencies" />
   </div>
 </template>
 <script>
@@ -110,7 +109,7 @@ export default {
           this.id = res.data.ciUploadId;
         }
       } catch (error) {
-         if (error.response) {
+        if (error.response) {
           this.errorMsg = `${error.response.statusText} - ${error.response.status}`;
         }
       }
@@ -165,25 +164,12 @@ export default {
           this.file = null;
         }
       } catch (error) {
-         if (error.response) {
+        if (error.response) {
           this.errorMsg = `${error.response.statusText} - ${error.response.status} `;
           clearInterval(intervalId);
-          this.isScanning = false
-          this.file = null
+          this.isScanning = false;
+          this.file = null;
         }
-      }
-    },
-    async whoAmI() {
-      try {
-        const res = await axios.get(urlWhoAmI, {
-          headers: {
-            Authorization: "Bearer " + token,
-          },
-        });
-
-        console.log(res);
-      } catch (error) {
-        console.log("error", error);
       }
     },
   },
