@@ -1,46 +1,49 @@
 <template lang="">
-  <div class="wrapper" :class="useTheme ? 'grey darken-3' : 'grey lighten-5'">
-    <div class="container">
-      <h3 :class="useTheme ? 'white-text' : 'black-text'">
-        Debricked Dependency Scanner
-      </h3>
-      <form>
-        <div class="form-group">
-          <label class="m-4" for="file">Choose file</label>
-          <input
-            type="file"
-            id="file"
-            ref="file"
-            class="form-control-file"
-            v-on:change="handleFileUpload"
-          />
-        </div>
-        <button
-          type="button"
-          class="btn btn-dark m-4"
-          v-on:click="submitFile"
-          :disabled="file === null"
-        >
-          Submit
-        </button>
-      </form>
+  <div class="container">
+    <h3 :class="useTheme ? 'white-text' : 'black-text'">
+      Debricked Dependency Scanner
+    </h3>
+    <form>
+      <div class="form-group">
+        <label class="m-4" for="file">Choose file</label>
+        <input
+          type="file"
+          id="file"
+          ref="file"
+          class="form-control-file"
+          v-on:change="handleFileUpload"
+        />
+      </div>
+      <button
+        v-if="!isScanning"
+        type="button"
+        class="btn btn-dark m-4"
+        v-on:click="submitFile"
+        :disabled="file === null"
+      >
+        Submit
+      </button>
+      <div v-else="isScanning" class="spinner-border" role="status"></div>
+    </form>
 
-      <div class="progress">
-        <div
-          :style="{ width: value + '%' }"
-          class="progress-bar progress-bar-striped bg-dark"
-          role="progressbar"
-          aria-valuemin="0"
-          aria-valuemax="100"
-          ƒ
-        > {{value + '%'}}</div>
+    <div class="progress">
+      <div
+        :style="{ width: value + '%' }"
+        class="progress-bar progress-bar-striped bg-dark"
+        role="progressbar"
+        aria-valuemin="0"
+        aria-valuemax="100"
+        ƒ
+      >
+        {{ value + "%" }}
       </div>
     </div>
-    <div v-if="errorMsg" class="alert alert-warning" role="alert">
-      {{ this.errorMsg }}
-    </div>
+  <div v-if="errorMsg" class="alert alert-warning" role="alert">
+    {{ this.errorMsg }}
+  </div>
 
-    <Results v-if="dependencies" v-bind:items="dependencies" />
+  <Results v-if="dependencies" v-bind:items="dependencies" />
+  
   </div>
 </template>
 <script>
@@ -65,7 +68,7 @@ export default {
       id: null,
       file: null,
       useTheme: store.state.useTheme,
-      value: 100,
+      value: 0,
       vulnerabilities: null,
       dependencies: null,
       isScanning: false,
@@ -73,7 +76,7 @@ export default {
     };
   },
   watch: {
-    // when id is set start the scan progress!
+    // when id is set, start the scan progress!
     id: function (val) {
       if (val === this.id) {
         this.startScanning();
@@ -103,16 +106,16 @@ export default {
             Authorization: "Bearer " + token,
           },
         });
-        console.log("data", res);
         if (res.status === 200) {
           this.id = res.data.ciUploadId;
         }
       } catch (error) {
-        console.log("error", error);
+         if (error.response) {
+          this.errorMsg = `${error.response.statusText} - ${error.response.status}`;
+        }
       }
     },
     async startScanning() {
-      console.log("start scanning");
       const formData = new FormData();
       formData.append("ciUploadId", this.id);
 
@@ -125,14 +128,14 @@ export default {
         // if post req returns a 204 fire an interval to get updates about scanning progress every 1.5 sec.
         if (res.status === 204) {
           intervalId = setInterval(this.getScanningProgress, 1000);
+          this.isScanning = true;
         }
       } catch (error) {
         if (error.response) {
-          this.errorMsg = error.response.statusText;
+          this.errorMsg = `${error.response.statusText} - ${error.response.status} `;
         }
       }
     },
-
     async getScanningProgress() {
       try {
         const res = await axios.get(urlTrackProgress, {
@@ -146,22 +149,28 @@ export default {
         if (res.status === 202) {
           this.value = res.data.progress;
         } else if (res.status === 200) {
-          console.log("scan is complete", res.data);
           // when scan is complete clear the the interval and set the progress value to it's final value.
           clearInterval(intervalId);
           this.value = res.data.progress;
 
           // from results - the 5th object always seems to have cves so in order to display some result on the page I choose this one.
           if (res.data.automationRules[5].hasCves) {
-            console.log(
-              "data to loop",
-              res.data.automationRules[5].triggerEvents
+            this.dependencies = res.data.automationRules[5].triggerEvents.slice(
+              0,
+              5
             );
-            this.dependencies = res.data.automationRules[5].triggerEvents;
           }
+          // hide loading indicator when scanning is complete, and clear this.file so user does not accidently try to scan again
+          this.isScanning = false;
+          this.file = null;
         }
       } catch (error) {
-        console.log("error", error);
+         if (error.response) {
+          this.errorMsg = `${error.response.statusText} - ${error.response.status} `;
+          clearInterval(intervalId);
+          this.isScanning = false
+          this.file = null
+        }
       }
     },
     async whoAmI() {
@@ -182,7 +191,8 @@ export default {
 </script>
 <style scoped>
 .wrapper {
-  height: 100vh;
+  width: 80%;
+  margin: 0 auto;
 }
 .progress {
   border-radius: 20px;
@@ -190,6 +200,4 @@ export default {
   margin: 2em auto;
   font-size: 18px;
 }
-
-
 </style>
