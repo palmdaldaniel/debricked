@@ -1,11 +1,11 @@
 <template lang="">
-  <div class="container">
-    <h3 :class="useTheme ? 'white-text' : 'black-text'">
-      Debricked Dependency Scanner
-    </h3>
+  <div
+    class="container p-4"
+    :class="useTheme ? 'dark text-white' : 'light text-dark'"
+  >
+    <h3>Debricked Dependency Scanner</h3>
     <form>
-      <div class="form-group">
-        <label class="m-4" for="file">Choose file</label>
+      <div class="form-group my-4">
         <input
           type="file"
           id="file"
@@ -17,7 +17,8 @@
       <button
         v-if="!isScanning"
         type="button"
-        class="btn btn-dark m-4"
+        class="btn my-4"
+        :class="useTheme ? 'btn-light' : 'btn-dark'"
         v-on:click="submitFile"
         :disabled="file === null"
       >
@@ -29,7 +30,8 @@
     <div class="progress">
       <div
         :style="{ width: value + '%' }"
-        class="progress-bar progress-bar-striped bg-dark"
+        class="progress-bar progress-bar-striped"
+        :class="useTheme ? 'bg-warning' : 'bg-dark'"
         role="progressbar"
         aria-valuemin="0"
         aria-valuemax="100"
@@ -46,15 +48,14 @@
   </div>
 </template>
 <script>
-import { store } from "../store/store.js";
 import {
   token,
   urlUpload,
   urlStartScanning,
   urlTrackProgress,
-  urlWhoAmI,
 } from "../assets/utils";
 import Results from "../components/Results.vue";
+import { store } from "../store/store";
 
 let intervalId;
 
@@ -66,12 +67,12 @@ export default {
     return {
       id: null,
       file: null,
-      useTheme: store.state.useTheme,
       value: 0,
       vulnerabilities: null,
       dependencies: null,
       isScanning: false,
       errorMsg: null,
+      useTheme: store.state.useTheme,
     };
   },
   watch: {
@@ -152,6 +153,10 @@ export default {
           clearInterval(intervalId);
           this.value = res.data.progress;
 
+          // hide loading indicator when scanning is complete, and clear this.file so user does not accidently try to scan again
+          this.isScanning = false;
+          this.file = null;
+
           // from results - the 5th object always seems to have cves so in order to display some result on the page I choose this one.
           if (res.data.automationRules[5].hasCves) {
             this.dependencies = res.data.automationRules[5].triggerEvents.slice(
@@ -159,9 +164,6 @@ export default {
               5
             );
           }
-          // hide loading indicator when scanning is complete, and clear this.file so user does not accidently try to scan again
-          this.isScanning = false;
-          this.file = null;
         }
       } catch (error) {
         if (error.response) {
@@ -173,11 +175,17 @@ export default {
       }
     },
   },
+  mounted() {
+    // retrive value from local storage
+    const jsonValue = localStorage.getItem("theme");
+    const theme = JSON.parse(jsonValue);
+
+    this.useTheme = theme;
+  },
 };
 </script>
 <style scoped>
-.wrapper {
-  width: 80%;
+.container {
   margin: 0 auto;
 }
 .progress {
@@ -185,5 +193,13 @@ export default {
   height: 30px;
   margin: 2em auto;
   font-size: 18px;
+}
+
+.dark {
+  background: black;
+}
+
+.light {
+  background: white;
 }
 </style>

@@ -1,40 +1,47 @@
 <template>
-  <div class="container">
-    <a @click="themeSwitcher" class="waves-effect waves-light btn"
-      >theme switcher</a
+  <div class="container my-4" :class="useTheme ? 'dark': 'light'">
+    <button
+      type="button"
+      v-on:click="themeSwitcher"
+      class="btn"
+      :class="useTheme ? 'btn-light' : 'btn-dark'"
     >
-    <p
-      v-if="user"
-      class="right-align"
-      :class="useTheme ? 'white-text' : 'black-text'"
-    >
-      Welcome {{ user }}
-    </p>
+      Theme Switcher
+    </button>
+    <div v-if="user" :class="useTheme ? 'text-white' : 'text-black'">
+      <p><span>Welcome:</span> {{ user }}</p>
+      <div v-if="repos">
+        <p><span>Your repos:</span></p>
 
-      <h6>Your repos:</h6>
-
-    <table class="table table-striped table-light">
-      <thead>
-        <tr>
-          <th>Repo</th>
-          <th>ID</th>
-        </tr>
-      </thead>
-      <tbody v-for="item in repos" key="item.id">
-        <tr>
-          <td>{{ item.name }}</td>
-          <td>{{ item.id }}</td>
-        </tr>
-      </tbody>
-    </table>
+        <table
+          class="table table-striped"
+          :class="useTheme ? 'table-dark' : 'table-light'"
+        >
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>ID</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="item in repos" key="item.id">
+              <td>{{ item.name }}</td>
+              <td>{{ item.id }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div v-if="errorMsg" class="alert alert-warning" role="alert">
+      {{ this.errorMsg }}
+    </div>
   </div>
-
-  
 </template>
 
 <script>
 import { urlWhoAmI, urlUsersRepos, token } from "../assets/utils.js";
 import { store } from "../store/store.js";
+
 
 export default {
   data() {
@@ -42,15 +49,12 @@ export default {
       user: null,
       useTheme: store.state.useTheme,
       repos: null,
+      errorMsg: null,
     };
   },
   methods: {
     themeSwitcher() {
-      //set theme to the opposite to what it is.
-      store.state.useTheme = !store.state.useTheme;
-
-      // also need to update this components theme state
-      this.useTheme = store.state.useTheme;
+      this.useTheme = !this.useTheme
     },
     async whoAmI() {
       try {
@@ -62,7 +66,9 @@ export default {
 
         this.user = res.data.name;
       } catch (error) {
-        console.log("error", error.response);
+        if (error.response) {
+          this.errorMsg = `${error.response.data.message} - ${error.response.data.code}`;
+        }
       }
     },
     async getRepos() {
@@ -72,21 +78,56 @@ export default {
             Authorization: "Bearer " + token,
           },
         });
-
-        console.log(res.data);
         this.repos = res.data;
       } catch (error) {
-        console.log("error", error.response);
+        if (error.response) {
+          console.log(error.response.status);
+          this.errorMsg = `${error.response.status} - ${error.response.statusText}`;
+        }
       }
     },
   },
+  watch: {
+    useTheme: function(val) {
+      localStorage.setItem('theme', val)
+      store.updateTheme(val)
+    }
+
+  },
   mounted() {
     this.whoAmI(), this.getRepos();
+
+    // retrive value from local storage
+    const jsonValue = localStorage.getItem("theme");
+    const theme = JSON.parse(jsonValue);
+
+    this.useTheme = theme 
   },
+ 
+ 
 };
 </script>
-<style>
-.wrapper {
-  height: 100vh;
+<style scoped>
+.container {
+  position: relative;
+}
+
+button {
+  position: absolute;
+  top: 20px;
+  left: 87%;
+}
+
+span {
+  font-weight: bolder;
+}
+
+
+.dark {
+  background: black;
+}
+
+.light {
+  background: white;
 }
 </style>

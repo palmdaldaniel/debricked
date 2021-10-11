@@ -1,30 +1,13 @@
 <template>
-  <div id="app" class="grey lighten-5">
-    <div id="nav">
+  <div class="app">
+    <div id="nav" class="text-center">
       <router-link to="/">Home</router-link>
       <span>|</span>
       <router-link to="/profile">Profile</router-link>
     </div>
+    <router-view />
   </div>
-  <router-view />
 </template>
-
-<script>
-export default {
-  data() {
-    return {
-      useTheme: false,
-    };
-  },
-
-  mounted() {
-    const jsonValue = localStorage.getItem("theme");
-    const theme = JSON.parse(jsonValue);
-
-    this.useTheme = theme;
-  },
-};
-</script>
 
 <style scoped>
 #app {
@@ -35,10 +18,14 @@ export default {
   color: #2c3e50;
   margin: 0;
 }
+.app {
+  height: 100vh;
+}
 
 #nav {
   padding: 1em;
 }
+
 
 span {
   margin: 10px;
