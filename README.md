@@ -1,7 +1,13 @@
 # Vue 3 + Vite
 
-This template should help get you started developing with Vue 3 in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+## Setup
 
-## Recommended IDE Setup
+1st: run npm install
 
-- [VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=johnsoncodehk.volar)
+2st: start app
+
+To run client: stand in root folder and run "npm run dev"
+
+To run proxy server: stand in cors-proxy-master and run "npm run serve"
+
+Localhost is run on port 3000. 
