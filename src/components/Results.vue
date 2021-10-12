@@ -1,5 +1,6 @@
 <template>
   <div>
+    <p :class="useTheme ? 'text-white' : 'text-dark'">Results:</p>
     <table
       class="table table-striped"
       :class="useTheme ? 'table-dark' : 'table-light'"
@@ -37,5 +38,9 @@ export default {
 <style scoped>
 .table {
   margin: 0 auto;
+}
+
+p {
+  font-weight: bolder;
 }
 </style>

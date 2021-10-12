@@ -10,7 +10,7 @@
       Theme Switcher
     </button>
     <div v-if="user" :class="useTheme ? 'text-white' : 'text-black'">
-      <p><span>Welcome:</span> {{ user }}</p>
+      <p class="py-3"><span>Welcome:</span> {{ user }}</p>
       <div v-if="repos">
         <p><span>Your repos:</span></p>
 
