@@ -10,4 +10,4 @@ To run client: stand in root folder and run "npm run dev"
 
 To run proxy server: stand in cors-proxy-master and run "npm run serve"
 
-Localhost is run on port 3000. 
+Local Host is run on port 3000. 
