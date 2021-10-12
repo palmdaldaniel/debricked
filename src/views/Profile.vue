@@ -1,5 +1,6 @@
 <template>
-  <div class="container my-4" :class="useTheme ? 'dark': 'light'">
+<div v-if='user' class="wrapper"  :class="useTheme ? 'dark' : 'light'">
+  <div class="container">
     <button
       type="button"
       v-on:click="themeSwitcher"
@@ -35,6 +36,11 @@
     <div v-if="errorMsg" class="alert alert-warning" role="alert">
       {{ this.errorMsg }}
     </div>
+  </div>
+  </div>
+  <div v-else class="text-center py-3">
+    <h3>You need to be logged in first</h3>
+    <a href="https://debricked.com/" target="_blank">Go to home</a>
   </div>
 </template>
 
@@ -108,6 +114,12 @@ export default {
 };
 </script>
 <style scoped>
+
+
+.wrapper {
+  height: 100vh;
+}
+
 .container {
   position: relative;
 }

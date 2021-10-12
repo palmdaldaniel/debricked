@@ -1,10 +1,11 @@
 <template lang="">
+<div class="wrapper" :class="useTheme ? 'dark': 'light'">
   <div
     class="container p-4"
-    :class="useTheme ? 'dark text-white' : 'light text-dark'"
+    :class="useTheme ? 'text-white' : 'text-dark'"
   >
     <h3>Debricked Dependency Scanner</h3>
-    <form>
+    <form @submit="submitFile">
       <div class="form-group my-4">
         <input
           type="file"
@@ -16,7 +17,7 @@
       </div>
       <button
         v-if="!isScanning"
-        type="button"
+        type="submit"
         class="btn my-4"
         :class="useTheme ? 'btn-light' : 'btn-dark'"
         v-on:click="submitFile"
@@ -45,6 +46,7 @@
     </div>
 
     <Results v-if="dependencies" v-bind:items="dependencies" />
+  </div>
   </div>
 </template>
 <script>
@@ -185,6 +187,10 @@ export default {
 };
 </script>
 <style scoped>
+.wrapper {
+  height: 100vh;
+}
+
 .container {
   margin: 0 auto;
 }

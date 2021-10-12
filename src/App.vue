@@ -1,6 +1,6 @@
 <template>
   <div class="app">
-    <div id="nav" class="text-center">
+    <div id="nav" class="text-center dark">
       <router-link to="/">Home</router-link>
       <span>|</span>
       <router-link to="/profile">Profile</router-link>
@@ -26,12 +26,17 @@
   padding: 1em;
 }
 
+.dark {
+  background-color: black;
+}
 
 span {
   margin: 10px;
+  color: white
 }
 
 a {
-  color: black;
+  font-size: 1.1em;
+  color: white;
 }
 </style>
