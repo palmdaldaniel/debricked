@@ -1,6 +1,5 @@
 <template>
   <div>
-    <p :class="useTheme ? 'text-white' : 'text-dark'">Results:</p>
     <table
       class="table table-striped"
       :class="useTheme ? 'table-dark' : 'table-light'"

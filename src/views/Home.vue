@@ -2,7 +2,7 @@
 <div class="wrapper" :class="useTheme ? 'dark': 'light'">
   <div
     class="container p-4"
-    :class="useTheme ? 'text-white' : 'text-dark'"
+    :class="useTheme ? 'text-white border' : 'text-dark'"
   >
     <h3>Debricked Dependency Scanner</h3>
     <form @submit="submitFile">
@@ -44,7 +44,7 @@
     <div v-if="errorMsg" class="alert alert-warning" role="alert">
       {{ this.errorMsg }}
     </div>
-
+    <p v-if="dependencies" :class="useTheme ? 'text-white' : 'text-dark'">Results:</p>
     <Results v-if="dependencies" v-bind:items="dependencies" />
   </div>
   </div>
@@ -193,6 +193,10 @@ export default {
 
 .container {
   margin: 0 auto;
+}
+
+.border {
+  border: 1px grey solid !important;
 }
 .progress {
   border-radius: 20px;
